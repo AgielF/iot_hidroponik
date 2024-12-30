@@ -13,9 +13,9 @@ const char* password = "asdqwezxc";
 DHT dht(DHTPIN, DHTTYPE);
 
 // Endpoint REST API
-const char* dht22Endpoint = "http://192.168.201.102:3000/api/sensor-dht22";
-const char* ecEndpoint = "http://192.168.201.102:3000/api/sensor-ec";
-const char* ldrEndpoint = "http://192.168.201.102:3000/api/sensor-ldr";
+const char* dht22Endpoint = "http://192.168.56.102:3000/api/sensor-dht22";
+const char* ecEndpoint = "http://192.168.56.102:3000/api/sensor-ec";
+const char* ldrEndpoint = "http://192.168.56.102:3000/api/sensor-ldr";
 
 // WebSocket
 WebSocketsClient webSocket;
@@ -48,7 +48,7 @@ void setup() {
   Serial.println("\nWiFi connected");
 
   // Inisialisasi WebSocket
-  webSocket.begin("192.168.201.102", 3000, "/");
+  webSocket.begin("192.168.56.102", 3000, "/");
   webSocket.onEvent(webSocketEvent);
 }
 
@@ -72,16 +72,14 @@ void loop() {
     lastWebSocketSend = millis();
     sendSensorDataToWebSocket();
   }
-  // Membaca kecerahan dari LDR
-  kecerahan = analogRead(LDRPin);
-  Serial.print(kecerahan);
-  Serial.print(" (");
+  // // Membaca kecerahan dari LDR
+  // kecerahan = analogRead(LDRPin);
+  // Serial.print(kecerahan);
+  
 
   // WebSocket loop
   webSocket.loop();
 }
-
-
 
 
 
@@ -90,7 +88,11 @@ void sendSensorDataToRest() {
   float suhu = dht.readTemperature();
   float kelembaban = dht.readHumidity();
   int ldrValue = analogRead(LDRPin); // Membaca data LDR
-  float tdsValue = readTdsValue(suhu); // Membaca data TDS
+  float tdsValue = readTdsValue(TdsSensorPin); // Membaca data TDS
+
+     // Perbaiki rentang pemetaan
+  int mapped_ldr_Value = map(ldrValue, 0, 4095, 0, 100);
+  
 
   if (isnan(suhu) || isnan(kelembaban)) {
     Serial.println("Failed to read from DHT22 sensor!");
@@ -120,26 +122,39 @@ void sendSensorDataToRest() {
   // Kirim data ke REST API untuk LDR
   http.begin(ldrEndpoint);
   http.addHeader("Content-Type", "application/json");
-  payload = "{\"ldrValue\":" + String(ldrValue) + "}";
+  payload = "{\"ldrValue\":" + String(mapped_ldr_Value) + "}";
   httpResponseCode = http.POST(payload);
   Serial.print("POST Response Code LDR: ");
   Serial.println(httpResponseCode);
+
+
   http.end();
+
+
 }
 
 void sendSensorDataToWebSocket() {
   float suhu = dht.readTemperature();
   float kelembaban = dht.readHumidity();
   int ldrValue = analogRead(LDRPin);
-  float tdsValue = readTdsValue(suhu);
+  float tdsValue = readTdsValue(TdsSensorPin);
+
+
+    // Perbaiki rentang pemetaan
+  int mapped_ldr_Value = map(ldrValue, 0, 4095, 0, 100);
+
 
   if (isnan(suhu) || isnan(kelembaban)) {
     Serial.println("Failed to read from DHT22 sensor!");
     return;
   }
+  if (ldrValue < 0 || ldrValue > 4095) {
+  Serial.println("Invalid LDR value");
+  return;
+}
 
   String jsonPayload = "{\"suhu\":" + String(suhu) + ",\"kelembaban\":" + String(kelembaban) +
-                       ",\"ldrValue\":" + String(ldrValue) + ",\"tdsValue\":" + String(tdsValue) + "}";
+                       ",\"ldrValue\":" + String(mapped_ldr_Value) + ",\"tdsValue\":" + String(tdsValue) + "}";
   webSocket.sendTXT(jsonPayload);
   Serial.print("WebSocket Sent: ");
   Serial.println(jsonPayload);

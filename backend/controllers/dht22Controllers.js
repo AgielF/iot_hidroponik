@@ -26,16 +26,16 @@ exports.getRatarata = (req, res) => {
 
 // Endpoint untuk membuat data baru
 exports.createItem = (req, res) => {
-  const { temperature, humidity } = req.body;
+  const { suhu, kelembaban } = req.body;
 
-  console.log(`[DEBUG] Incoming POST data -> Temperature: ${temperature}, Humidity: ${humidity}`);
+  console.log(`[DEBUG] Incoming POST data -> Temperature: ${suhu}, Humidity: ${kelembaban}`);
 
-  if (!temperature || !humidity) {
+  if (!suhu || !kelembaban) {
     console.error("[ERROR] Missing temperature or humidity data!");
     return res.status(400).json({ error: "Data tidak lengkap!" });
   }
 
-  const data = { temperature, humidity };
+  const data = { suhu, kelembaban };
 
   // Simpan data ke database
   Item.create(data, (err, results) => {

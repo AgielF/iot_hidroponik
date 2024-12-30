@@ -26,16 +26,16 @@ exports.getRatarata = (req, res) => {
 
 // Endpoint untuk membuat data baru
 exports.createItem = (req, res) => {
-  const { EC_value } = req.body;
+  const { tdsValue } = req.body;
 
-  console.log(`[DEBUG] Incoming POST data -> EC: ${EC_value}`);
+  console.log(`[DEBUG] Incoming POST data -> EC: ${tdsValue}`);
 
-  if (!EC_value) {
+  if (!tdsValue) {
     console.error("[ERROR] Missing EC data!");
     return res.status(400).json({ error: "Data tidak lengkap!" });
   }
 
-  const data = { EC };
+  const data = { tdsValue };
 
   // Simpan data ke database
   Item.create(data, (err, results) => {

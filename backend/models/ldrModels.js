@@ -6,7 +6,7 @@ const Item = {
   },
   create: (data, callback) => {
     const query = "INSERT INTO sensor_ldr (ldr_value, timestamp) VALUES ( ?, ?)";
-    db.query(query, [data.ldr_value, new Date()], callback);
+    db.query(query, [data.ldrValue, new Date()], callback);
   },
   // Mengambil data terbaru berdasarkan timestamp
   getLatest: (callback) => {

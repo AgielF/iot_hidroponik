@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
-import {WS_URL} from '../../config/config'
+import { WS_URL } from "../../config/config";
 
 const Tabs = ({ activeTab, setActiveTab }) => {
+  const tabLabels = ["DHT22", "Sensor PH", "Sensor LDR", "Sensor EC"];
   return (
     <div>
       <div className="hidden sm:block">
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex gap-6" aria-label="Tabs">
-            {["Tab 1", "Tab 2"].map((tab, index) => (
+            {tabLabels.map((tab, index) => (
               <a
                 key={index}
                 href="#"
@@ -46,12 +47,10 @@ const Dashboard = () => {
     return () => ws.close();
   }, []);
 
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Live Sensor Data</h1>
-      <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
-      <div className="mt-6">
-        {activeTab === 1 && (
+  const renderTable = () => {
+    switch (activeTab) {
+      case 1:
+        return (
           <div>
             <h2 className="text-xl font-semibold mb-2">Temperature and Humidity</h2>
             <table className="min-w-full bg-white border border-gray-200">
@@ -64,21 +63,84 @@ const Dashboard = () => {
               <tbody>
                 {data.map((entry, index) => (
                   <tr key={index}>
-                    <td className="px-4 py-2 border">{entry.temperature} °C</td>
-                    <td className="px-4 py-2 border">{entry.humidity} %</td>
+                    <td className="px-4 py-2 border">{entry.suhu} °C</td>
+                    <td className="px-4 py-2 border">{entry.kelembaban} %</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        )}
-        {activeTab === 2 && (
+        );
+      case 2:
+        return (
           <div>
-            <h2 className="text-xl font-semibold mb-2">Additional Data</h2>
-            <p className="text-gray-600">This is where additional sensor data or information will go.</p>
+            <h2 className="text-xl font-semibold mb-2">Sensor PH</h2>
+            <table className="min-w-full bg-white border border-gray-200">
+              <thead>
+                <tr>
+                  <th className="px-4 py-2 border">PH Level</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((entry, index) => (
+                  <tr key={index}>
+                    <td className="px-4 py-2 border">{entry.phValue}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+        );
+      case 3:
+        return (
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Sensor LDR</h2>
+            <table className="min-w-full bg-white border border-gray-200">
+              <thead>
+                <tr>
+                  <th className="px-4 py-2 border">LDR Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((entry, index) => (
+                  <tr key={index}>
+                    <td className="px-4 py-2 border">{entry.ldrValue}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      case 4:
+        return (
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Sensor EC</h2>
+            <table className="min-w-full bg-white border border-gray-200">
+              <thead>
+                <tr>
+                  <th className="px-4 py-2 border">EC Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((entry, index) => (
+                  <tr key={index}>
+                    <td className="px-4 py-2 border">{entry.tdsValue}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Live Sensor Data</h1>
+      <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
+      <div className="mt-6">{renderTable()}</div>
     </div>
   );
 };

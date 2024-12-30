@@ -26,10 +26,9 @@ function Tabs({ options, activeTab, setActiveTab }) {
               <a
                 key={index}
                 href="#"
-                className={`shrink-0 border-b-2 px-1 pb-4 text-sm font-medium ${
-                  activeTab === (index + 1).toString()
-                    ? "border-sky-500 text-sky-600"
-                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                className={`shrink-0 border-b-2 px-1 pb-4 text-sm font-medium ${activeTab === (index + 1).toString()
+                  ? "border-sky-500 text-sky-600"
+                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                 }`}
                 onClick={(e) => {
                   e.preventDefault();
@@ -47,14 +46,14 @@ function Tabs({ options, activeTab, setActiveTab }) {
 }
 
 // Komponen StatCards
-function StatCards({ apiEndpoint }) {
+function StatCards({ apiEndpoint, title, fields }) {
   const [sensorData, setSensorData] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const result = await getData(apiEndpoint); // Menggunakan endpoint API spesifik
-        setSensorData(result[0]); // API mengembalikan array, ambil elemen pertama
+        const result = await getData(apiEndpoint);
+        setSensorData(result[0]); // Ambil elemen pertama dari data yang diterima
       } catch (error) {
         console.error("Error loading sensor data:", error);
       }
@@ -69,22 +68,24 @@ function StatCards({ apiEndpoint }) {
 
   return (
     <Card
-      title="DHT 22"
-      value={sensorData.avg_temp.toFixed(2)}
-      value1={sensorData.avg_humid.toFixed(2)}
+      title={title}
+      fields={fields.map((field) => ({
+        label: field.label,
+        value: sensorData[field.key]?.toFixed(2) || "N/A",
+      }))}
     />
   );
 }
 
-const Card = ({ title, value, value1 }) => (
+// Komponen Reusable Card
+const Card = ({ title, fields }) => (
   <div className="col-span-4 p-4 rounded border border-stone-300">
-    <div className="flex mb-8 items-start justify-between">
-      <div>
-        <h3 className="text-stone-500 mb-2 text-sm">{title}</h3>
-        <p className="text-3xl font-semibold">Rata-rata Temp: {value}°C</p>
-        <p className="text-3xl font-semibold">Rata-rata Humid: {value1}%</p>
-      </div>
-    </div>
+    <h3 className="text-stone-500 mb-2 text-sm">{title}</h3>
+    {fields.map((field, index) => (
+      <p key={index} className="text-3xl font-semibold">
+        {field.label}: {field.value}
+      </p>
+    ))}
   </div>
 );
 
@@ -94,49 +95,80 @@ function MainComponents() {
   const [activeSubTab, setActiveSubTab] = useState("1");
 
   const mainTabs = [
-    "rata-rata sensor DHT22",
-    "rata-rata sensor PH",
-    "rata-rata sensor cahaya",
-    "rata-rata sensor EC",
+    "Rata-rata Sensor DHT22",
+    "Rata-rata Sensor PH",
+    "Rata-rata Sensor Cahaya",
+    "Rata-rata Sensor EC",
   ];
 
-  const subTabs = ["rata-rata keseluruhan","10 menit", "20 menit", "30 menit", "60 menit"];
-
-  const subTabEndpoints = [
-    "sensor-dht22/rata-rata",
-    "sensor-dht22/rata-rata/10",
-    "sensor-dht22/rata-rata/20",
-    "sensor-dht22/rata-rata/30",
-    "sensor-dht22/rata-rata/60",
+  const subTabs = [
+    "Rata-rata Keseluruhan",
+    "10 Menit Terakhir",
+    "20 Menit Terakhir",
+    "30 Menit Terakhir",
+    "60 Menit Terakhir",
   ];
+
+  const apiEndpoints = {
+    "1": [
+      "sensor-dht22/rata-rata",
+      "sensor-dht22/rata-rata/10",
+      "sensor-dht22/rata-rata/20",
+      "sensor-dht22/rata-rata/30",
+      "sensor-dht22/rata-rata/60",
+    ],
+    "2": [
+      "sensor-ph/rata-rata",
+      "sensor-ph/rata-rata/10",
+      "sensor-ph/rata-rata/20",
+      "sensor-ph/rata-rata/30",
+      "sensor-ph/rata-rata/60",
+    ],
+    "3": [
+      "sensor-ldr/rata-rata",
+      "sensor-ldr/rata-rata/10",
+      "sensor-ldr/rata-rata/20",
+      "sensor-ldr/rata-rata/30",
+      "sensor-ldr/rata-rata/60",
+    ],
+    "4": [
+      "sensor-ec/rata-rata",
+      "sensor-ec/rata-rata/10",
+      "sensor-ec/rata-rata/20",
+      "sensor-ec/rata-rata/30",
+      "sensor-ec/rata-rata/60",
+    ],
+  };
+
+  const fieldsByTab = {
+    "1": [
+      { label: "Rata-rata Temp", key: "avg_temp" },
+      { label: "Rata-rata Humid", key: "avg_humid" },
+    ],
+    "2": [
+      { label: "Rata-rata PH", key: "avg_ph" },
+    ],
+    "3": [
+      { label: "Rata-rata Cahaya", key: "avg_ldr_value" },
+    ],
+    "4": [
+      { label: "Rata-rata EC", key: "avg_ec" },
+    ],
+  };
 
   return (
     <div className="container mx-auto p-4">
-      <Tabs
-        options={mainTabs}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+      <Tabs options={mainTabs} activeTab={activeTab} setActiveTab={setActiveTab} />
 
       <div className="mt-6">
-        {activeTab === "1" && (
-          <div>
-            <Tabs
-              options={subTabs}
-              activeTab={activeSubTab}
-              setActiveTab={setActiveSubTab}
-            />
-            <div className="mt-6">
-              {subTabEndpoints.map((endpoint, index) => (
-                activeSubTab === (index + 1).toString() && <StatCards key={index} apiEndpoint={endpoint} />
-              ))}
-            </div>
-          </div>
-        )}
-        {activeTab === "2" && <p>konten untuk Tab 1</p>}
-        {activeTab === "3" && <p>Konten untuk Tab 2</p>}
-        {activeTab === "4" && <p>Konten untuk Tab 3</p>}
-        {activeTab === "5" && <p>Konten untuk Tab 4</p>}
+        <Tabs options={subTabs} activeTab={activeSubTab} setActiveTab={setActiveSubTab} />
+        <div className="mt-6">
+          <StatCards
+            apiEndpoint={apiEndpoints[activeTab][parseInt(activeSubTab) - 1]}
+            title={mainTabs[parseInt(activeTab) - 1]}
+            fields={fieldsByTab[activeTab]}
+          />
+        </div>
       </div>
     </div>
   );

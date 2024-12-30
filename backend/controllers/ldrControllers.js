@@ -26,16 +26,16 @@ exports.getRatarata = (req, res) => {
 
 // Endpoint untuk membuat data baru
 exports.createItem = (req, res) => {
-  const { LDR } = req.body;
+  const { ldrValue } = req.body;
 
-  console.log(`[DEBUG] Incoming POST data -> LDR: ${LDR}`);
+  console.log(`[DEBUG] Incoming POST data -> LDR: ${ldrValue}`);
 
-  if (!LDR) {
+  if (!ldrValue) {
     console.error("[ERROR] Missing LDR data!");
     return res.status(400).json({ error: "Data tidak lengkap!" });
   }
 
-  const data = { LDR };
+  const data = { ldrValue };
 
   // Simpan data ke database
   Item.create(data, (err, results) => {

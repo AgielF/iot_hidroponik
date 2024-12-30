@@ -15,8 +15,10 @@
     "cors": "^2.8.5",
     "express": "^4.21.1",
     "express-ws": "^5.0.2",
+    "ml-kmeans": "^6.0.0",
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
+    "node-fetch": "^3.3.2",
     "ws": "^8.18.0"
   },
   "devDependencies": {

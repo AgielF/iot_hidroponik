@@ -6,7 +6,7 @@ const Item = {
   },
   create: (data, callback) => {
     const query = "INSERT INTO sensor_ec (ec_value, timestamp) VALUES ( ?, ?)";
-    db.query(query, [data.ec_value, new Date()], callback);
+    db.query(query, [data.tdsValue, new Date()], callback);
   },
   // Mengambil data terbaru berdasarkan timestamp
   getLatest: (callback) => {
@@ -17,7 +17,7 @@ const Item = {
     const query = `
     SELECT 
       AVG(ec_value) AS avg_ec
-    FROM sensor_ldr
+    FROM sensor_ec
   `;
     db.query(query, callback);
   },
